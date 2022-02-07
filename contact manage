@@ -33,7 +33,7 @@ void print_menu();
 int location(CT list[], int n);
 void add_contact_information(CT &x);
 void add_phone_number(CT &x);
-void add_birthday(CT &x);
+void add_birthday(CT &n);
 void add_contact(CT list[], int &n);
 void edit_contact();
 void delete_contact(CT list[], int &n);  // (by name or phone number)
@@ -43,8 +43,9 @@ void list_all_contacts_in_the_table_format(); // (sort by name)
 
 int main()
 {	
-	CT list[100];
-	int n = -1;     // n is top index of list
+	int top = -1;     //top la index cua phan tu tren cung, top + 1 se la size   
+	CT *list;
+	list = (CT *)malloc( sizeof(CT));
 	char choice;
 
 	do
@@ -63,16 +64,16 @@ int main()
 		switch(choice)
 		{
 			case '1':	
-				add_contact(list, n);
+				add_contact(list, top);
 				break;
 			case '2':
 				edit_contact();
 				break;
 			case '3':
-				delete_contact(list, n);
+				delete_contact(list, top);
 				break;
 			case '4':
-				search_contact(list, n);
+				search_contact(list, top);
 				break;
 			case '5' :
 				list_all_contacts_with_birthdays_in_a_given_month();
@@ -81,7 +82,7 @@ int main()
 				list_all_contacts_in_the_table_format();
 				break;
 			case '7' :
-				show(list, n);
+				show(list, top);
 				break;
 		}
 		
@@ -220,10 +221,12 @@ void add_contact_information(CT &x)
 }
 
 
-void add_contact(CT list[], int &n)
+void add_contact(CT *list, int &n)
 {
-	CT x;
+	CT x;	
 	n++;
+	
+	list = (CT *)realloc(list, (n+1)*sizeof(CT));
 	
 	add_contact_information(x);
 	list[n] = x;
@@ -256,6 +259,7 @@ void delete_contact(CT list[], int &n)
 				list[i] = list[i+1];
 			}
 		n--;
+		list = (CT *)realloc(list, (n+1)*sizeof(CT));
 		printf("You deleted successfully");		
 	}
 }
