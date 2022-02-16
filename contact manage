@@ -5,9 +5,9 @@
 
 struct struct_birthday
 {
-	char day[10];
-	char month[10];
-	char year[10];
+	float day;
+	float month;
+	float year;
 };
 
 typedef struct struct_birthday BIRTHDAY;
@@ -28,18 +28,21 @@ struct contact
 typedef struct contact CT;
 
 
-void show(CT list[], int n);
 void print_menu();
-int location(CT list[], int n);
-void add_contact_information(CT &x);
-void add_phone_number(CT &x);
-void add_birthday(CT &n);
-void add_contact(CT list[], int &n);
-void edit_contact();
-void delete_contact(CT list[], int &n);  // (by name or phone number)
-void search_contact(CT list[], int n);  // (by name or phone number)
-void list_all_contacts_with_birthdays_in_a_given_month(); //(sort by date)
+void add_contact(CT *list, int *top);
+void edit_contact(CT *list, int top);
+void delete_contact(CT *list, int *top);  // (by name or phone number)
+void search_contact(CT *list, int n);  // (by name or phone number)
+void list_all_contacts_with_birthdays_in_a_given_month(CT *list, int top); //(sort by date)
 void list_all_contacts_in_the_table_format(); // (sort by name)
+void add_contact_information(CT *sample);
+void add_phone_number(CT *sample);
+void add_birthday(CT *sample);
+int location(CT *list, int top);
+void display_information(CT sample);
+void clear();
+void show(CT *list, int n);
+
 
 int main()
 {	
@@ -64,19 +67,19 @@ int main()
 		switch(choice)
 		{
 			case '1':	
-				add_contact(list, top);
+				add_contact(list, &top);
 				break;
 			case '2':
-				edit_contact();
+				edit_contact(list, top);
 				break;
 			case '3':
-				delete_contact(list, top);
+				delete_contact(list, &top);
 				break;
 			case '4':
 				search_contact(list, top);
 				break;
 			case '5' :
-				list_all_contacts_with_birthdays_in_a_given_month();
+				list_all_contacts_with_birthdays_in_a_given_month(list, top);
 				break;
 			case '6' :
 				list_all_contacts_in_the_table_format();
@@ -91,7 +94,7 @@ int main()
 			printf("\n\n---\n");
 			printf("Press any key to back to main menu.");
 			getchar();
-			fflush(stdin);
+			clear();
 		}
 	}
 	while (choice != 'q');
@@ -116,182 +119,110 @@ void print_menu()
 }
 
 
-int location(CT list[], int n)
-{	
-	char choice;
-	int i;
-	CT temp, x;
-	printf("1. Perform operation with name\n");
-	printf("2. Perform operation with phone number\n\n");
-	printf("Enter your choice (1/2): ");
-	scanf("%c", &choice);
-	fflush(stdin);
-	
-	if(choice == '1')
-	{
-		printf("Enter first name: "); fgets(temp.first_name, sizeof(temp.first_name), stdin);
-		printf("Enter last name: "); fgets(temp.last_name, sizeof(temp.last_name), stdin);
-		for(i = 0; i <= n; i++)
-		{	
-			x = list[i]; 
-				
-			if(strcmp(temp.first_name, x.first_name) == 0 && strcmp(temp.last_name, x.last_name)== 0)
-			{	
-				return i;
-			}
-		}
-		return -1;
-	}
-	
-	else if(choice == '2')
-	{
-		add_phone_number(x);
-		for(i = 0; i <= n; i++)
-		{	
-			temp = list[i];
-			if(strcmp(temp.phone_number, x.phone_number) == 0)
-			{
-				return i;
-			}
-		}
-		return -1;
-	}
-		
-	else
-		return -2;
-	
-}
-
-
-void add_phone_number(CT &x)
+void add_contact(CT *list, int *top)
 {
-	int len;
+	CT sample;	
 	
-	printf("Enter phone number( Phone Number should be a number of 9 or 10 digits): ");
-	do
-	{
-		fgets(x.phone_number, sizeof(x.phone_number), stdin);
-		len = strlen(x.phone_number) - 1;
-
-		if(len < 9 || len > 10)
-		{	
-       		printf("ERROR, Phone Number should be a number of 9 or 10 digits\n");
- 			printf("Re-enter phone number: ");
-		}
-	}
-	while(len < 9 || len > 10);
-}
-
-
-
-void add_birthday(CT &x)
-{
-	BIRTHDAY B;
-	int len1, len2, len3;
-	printf("Birthday(DD/MM/YYYY):\n");
-	do
-	{	
-		printf("Enter day: "); scanf("%s", B.day); fflush(stdin);
-		printf("Enter month: "); scanf("%s", B.month); fflush(stdin);
-		printf("Enter year: "); scanf("%s", B.year); fflush(stdin);
-		x.birthday = B;
-		len1 = strlen(B.day) ;
-		len2 = strlen(B.month) ;
-		len3 = strlen(B.year) ;	
-		if(len1 != 2 || len2 != 2 || len3 != 4 )
-		{
-			printf("ERROR, Bithday should be in the DD/MM/YYYY format \n");
-			printf("Re-Enter\n");
-		}
-	}
-	while(len1 != 2 || len2 != 2 || len3 != 4);
-}
-
-
-void add_contact_information(CT &x)
-{
-	printf("Enter first name: "); fgets(x.first_name, sizeof(x.first_name), stdin);
-	printf("Enter last name: "); fgets(x.last_name, sizeof(x.last_name), stdin);
-	printf("Enter company: "); fgets(x.company, sizeof(x.company), stdin);
-	add_phone_number(x);
-	printf("Enter email: "); fgets(x.email, sizeof(x.email), stdin);
-	printf("Enter working address: "); fgets(x.working_address, sizeof(x.working_address), stdin);
-	printf("Enter home address: "); fgets(x.home_address, sizeof(x.home_address), stdin);
-	add_birthday(x);
-}
-
-
-void add_contact(CT *list, int &n)
-{
-	CT x;	
-	n++;
+	*top = *top + 1;
 	
-	list = (CT *)realloc(list, (n+1)*sizeof(CT));
+	list = (CT *)realloc(list, (*top+1)*sizeof(CT));
 	
-	add_contact_information(x);
-	list[n] = x;
+	add_contact_information(&sample);	
+	list[*top] = sample;
+	
 	printf("You added successfully");
 }
 
 
-void edit_contact()
+void edit_contact(CT *list, int top)
 {
-	printf("Write your code to edit contact here.");
+	int loc = location(list, top);
+	
+	if(loc == -1)
+		printf("Not contact found");
+	else
+		{
+			printf("\nStart editing:\n\n");
+			add_contact_information(&list[loc]);
+		}
+	
 }
 
 
-void delete_contact(CT list[], int &n)
-{	char phone_number_delete[25];
+void delete_contact(CT *list, int *top)
+{	
 	int i, loc;   // loc = location
 	
 	printf("Choose 1/2 to delete\n");
 	
-	loc = location(list, n);
-	
+	loc = location(list, *top);
+
 	if(loc == -1)
 		printf("Not contact found");
-	else if	(loc == -2)
-		printf("");		
 	else
 	{	
-		for(i = loc; i <= n; i++)
+		for(i = loc; i <= *top; i++)
 			{	
 				list[i] = list[i+1];
 			}
-		n--;
-		list = (CT *)realloc(list, (n+1)*sizeof(CT));
+			
+		*top = *top - 1;
+		list = (CT *)realloc(list, (*top + 1)*sizeof(CT));
+		
 		printf("You deleted successfully");		
-	}
+	}	
 }
 
 
-void search_contact(CT list[], int n)
+void search_contact(CT *list, int n)
 {
-	int loc = location(list, n);
-	CT x = list[loc];
-	BIRTHDAY B = x.birthday;
+	int loc;  // loc = location
 	
-	if(loc == -1)
+	printf("Choose 1/2 to search\n");
+	
+	loc = location(list, n);
+	
+	if(loc == -1 )
 		printf("Not contact found");
-	else if(loc == -2)
-		printf("");
 	else
 	{
-	printf("First name: %s", x.first_name); 
-	printf("Last name: %s", x.last_name); 
-	printf("Company: ", x.company);
-	printf("Phone number: %s", x.phone_number);
-	printf("Email: %s", x.email);
-	printf("Working address: %s", x.working_address); 
-	printf("Home address: %s", x.home_address);
-	printf("Birthday: %s/%s/%s\n", B.day, B.month, B.year);
+	printf("\n\nInformation: \n\n");
+	display_information(list[loc]);
 	}
 }
 
 
-void list_all_contacts_with_birthdays_in_a_given_month()
-{
-	printf("1");
+void list_all_contacts_with_birthdays_in_a_given_month(CT *list, int top)
+{	
+	int i, j, x = 1;
+	int month;
+	
+	printf("Enter the birth month of the contacts you want to show(format: MM): "); scanf("%s", month); clear();
+	
+	for(i = 0; i <= top; i++)
+	{
+		for(j = i; j <= top; j++)
+			{
+				if(list[i].birthday.day > list[j].birthday.day )
+				{
+					CT temp = list[i];
+					list[i] = list[j];
+					list[j] = temp;
+				}		
+			}
+	}
+	
+	printf("\nList of all contact that same a month(%s) of birth: \n\n", month);
+	
+	for(i = 0; i <= top; i++)
+	{	
+		if(list[i].birthday.month == month )	
+		{
+		printf("Information of contact %d: \n", x); x++;
+		display_information(list[i]);
+		}
+	}
+	
 }
 
 
@@ -300,22 +231,178 @@ void list_all_contacts_in_the_table_format()
 	printf("2");
 }
 
-void show(CT list[], int n)
+
+void add_contact_information(CT *sample)
+{
+	printf("Enter first name: "); fgets(sample->first_name, sizeof(sample->first_name), stdin);
+	printf("Enter last name: "); fgets(sample->last_name, sizeof(sample->last_name), stdin);
+	printf("Enter company: "); fgets(sample->company, sizeof(sample->company), stdin);
+	add_phone_number(sample);
+	printf("Enter email: "); fgets(sample->email, sizeof(sample->email), stdin);
+	printf("Enter working address: "); fgets(sample->working_address, sizeof(sample->working_address), stdin);
+	printf("Enter home address: "); fgets(sample->home_address, sizeof(sample->home_address), stdin);
+	add_birthday(sample);
+}
+
+
+void add_birthday(CT *sample)
+{
+	BIRTHDAY B;  
+	int len1, len2, len3, check, i;
+	
+	printf("Birthday(DD/MM/YYYY):\n");
+	
+	do
+	{	
+		check = 0;
+		
+		printf("Enter day: "); scanf("%d", &B.day); clear();
+		printf("Enter month: "); scanf("%d", &B.month); clear();
+		printf("Enter year: "); scanf("%d", &B.year); clear();
+		 
+		if(B.month == 1 || B.month == 3 || B.month == 5 || B.month == 7 || B.month == 8 || B.month == 10 || B.month == 12)
+		{
+			if(B.day > 31 || B.day < 1 )
+				check = 1;
+		}
+		
+		else if(B.month == 4 || B.month == 6 || B.month == 9 || B.month == 11)
+		{
+			if(B.day > 30 || B.day < 1)
+				check = 1;
+		}
+		
+		else if(B.month == 2)
+		{
+			if(B.day > 29 || B.day < 1)
+				check = 1;
+		}
+		
+		else
+			check = 1;
+		
+		
+		if(check == 1)
+		{
+			printf("ERROR, Bithday should be in the DD/MM/YYYY format \n");
+			printf("Re-Enter\n");
+		}
+	}
+	while(check == 1);
+	
+	sample->birthday = B;
+}
+
+
+void add_phone_number(CT *sample)
+{
+	int len, i, check;
+	
+	printf("Enter phone number( Phone Number should be a number of 9 or 10 digits): ");
+	
+	do
+	{
+		check = 0;
+		
+		fgets(sample->phone_number, sizeof(sample->phone_number), stdin);
+		len = strlen(sample->phone_number) - 1;
+		
+		for(i = 0; i <= 8; i++)
+		{
+			if(sample->phone_number[i] < 48 || sample->phone_number[i] > 57)
+				check = 1;
+		}
+		
+		if(len == 10 && (sample->phone_number[9] < 48 || sample->phone_number[9] > 57 ))
+			check = 1;
+			
+		if(len > 10)
+			check = 1;
+					
+		if(check == 1)
+		{	
+       		printf("ERROR, Phone Number should be a number of 9 or 10 digits\n");
+ 			printf("Re-enter phone number: ");
+		}
+	}
+	while(check == 1);
+}
+
+
+int location(CT *list, int top)
+{	
+	char choice;
+	int i;
+	CT sample;
+	
+	printf("1. Perform operation with name\n");
+	printf("2. Perform operation with phone number\n\n");
+	printf("Enter your choice (1/2): ");
+	scanf("%c", &choice);
+	clear();
+	
+	if(choice == '1')
+	{
+		printf("Enter first name: "); fgets(sample.first_name, sizeof(sample.first_name), stdin);
+		printf("Enter last name: "); fgets(sample.last_name, sizeof(sample.last_name), stdin);
+		for(i = 0; i <= top; i++)
+		{		
+			if(strcmp(sample.first_name, list[i].first_name) == 0 && strcmp(sample.last_name, list[i].last_name) == 0)
+				return i;
+		}
+		
+		return -1;
+	}
+	
+	else if(choice == '2')
+	{
+		add_phone_number(&sample);
+		for(i = 0; i <= top; i++)
+		{	
+			if(strcmp(sample.phone_number, list[i].phone_number) == 0)
+				return i;
+		}
+		
+		return -1;
+	}
+	else
+		return -1;      
+}
+
+
+void show(CT *list, int n)
 {	
 	CT x;
+	int i;
 	
-	
-	for(int i = 0; i <= n; i++)
-	{	x = list[i];
-		BIRTHDAY t = x.birthday;
-		printf("           Information of contact %d\n\n", i);
-		printf("First name: %s", x.first_name); 
-		printf("Last name: %s", x.last_name); 
-		printf("Company: ", x.company);
-		printf("Phone number: %s", x.phone_number);
-		printf("Email: %s", x.email);
-		printf("Working address: %s", x.working_address); 
-		printf("Home address: %s", x.home_address);
-		printf("Birthday: %s/%s/%s\n\n\n", t.day, t.month, t.year);
+	for(i = 0; i <= n; i++)
+	{	
+		
+		printf("       Information of contact %d\n\n", i);
+		display_information(list[i]);
 	}
+}
+
+void display_information(CT sample)
+{
+	printf("First name: %s", sample.first_name); 
+	printf("Last name: %s", sample.last_name); 
+	printf("Company: %s", sample.company);
+	printf("Phone number: %s", sample.phone_number);
+	printf("Email: %s", sample.email);
+	printf("Working address: %s", sample.working_address); 
+	printf("Home address: %s", sample.home_address);
+	printf("Birthday: %02d/%02d/%04d\n\n\n", sample.birthday.day, sample.birthday.month, sample.birthday.year);
+}
+
+
+void clear()
+{
+	char c;
+	
+	do
+	{
+		scanf("%c", &c);
+	}
+	while(c != '\n');
 }
