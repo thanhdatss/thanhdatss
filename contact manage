@@ -42,7 +42,6 @@ void add_phone_number(CT *sample);
 void add_birthday(CT *sample);
 void display_information(CT sample);
 int location(CT *list, int top);
-
 void clear();
 
 
@@ -112,6 +111,7 @@ int main()
 	}
 	while (choice != 'q');
 
+	free(list);
 	return 0;
 }
 
