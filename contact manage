@@ -34,7 +34,7 @@ void edit_contact(CT *list, int top);
 void delete_contact(CT *list, int *top);  // (by name or phone number)
 void search_contact(CT *list, int n);  // (by name or phone number)
 void list_all_contacts_with_birthdays_in_a_given_month(CT *list, int top); //(sort by date)
-void list_all_contacts_in_the_table_format(); // (sort by name)
+void list_all_contacts_in_the_table_format(CT *list, int top); // (sort by name)
 void add_contact_information(CT *sample);
 void add_phone_number(CT *sample);
 void add_birthday(CT *sample);
@@ -82,7 +82,7 @@ int main()
 				list_all_contacts_with_birthdays_in_a_given_month(list, top);
 				break;
 			case '6' :
-				list_all_contacts_in_the_table_format();
+				list_all_contacts_in_the_table_format(list, top);
 				break;
 			case '7' :
 				show(list, top);
@@ -111,7 +111,7 @@ void print_menu()
 	printf("2. Edit Contact\n");
 	printf("3. Delete Contact\n");
 	printf("4. Search_contact\n");
-	printf("5. List all contacts with birthdays in_a given month\n");
+	printf("5. List all contacts with birthdays in a given month\n");
 	printf("6. List all contacts in the table format\n");
 	printf("7. display list\n");
 	printf("q. Quit\n\n");
@@ -195,9 +195,9 @@ void search_contact(CT *list, int n)
 void list_all_contacts_with_birthdays_in_a_given_month(CT *list, int top)
 {	
 	int i, j, x = 1;
-	int month;
+	float month;
 	
-	printf("Enter the birth month of the contacts you want to show(format: MM): "); scanf("%s", month); clear();
+	printf("Enter the birth month of the contacts you want to show(format: MM): "); scanf("%f", &month); clear();
 	
 	for(i = 0; i <= top; i++)
 	{
@@ -212,13 +212,13 @@ void list_all_contacts_with_birthdays_in_a_given_month(CT *list, int top)
 			}
 	}
 	
-	printf("\nList of all contact that same a month(%s) of birth: \n\n", month);
+	printf("\nList of all contact that same a month(%.0f) of birth: \n\n", month);
 	
 	for(i = 0; i <= top; i++)
 	{	
 		if(list[i].birthday.month == month )	
 		{
-		printf("Information of contact %d: \n", x); x++;
+		printf("Information of contact %d: \n", i+1); 
 		display_information(list[i]);
 		}
 	}
@@ -226,16 +226,45 @@ void list_all_contacts_with_birthdays_in_a_given_month(CT *list, int top)
 }
 
 
-void list_all_contacts_in_the_table_format()
+void list_all_contacts_in_the_table_format(CT *list, int top)
 {
-	printf("2");
+	int i, j, x;
+	
+	
+	for(i = 0; i < top; i++)
+	{
+		for(j = 0; j < top - i; j++)
+		{	
+		
+		
+			if(strcmp(list[j].first_name, list[j+1].first_name) > 0)
+			{
+				CT temp = list[j];
+					list[j] = list[j+1];
+					list[j+1] = temp;
+			}
+		}
+	}
+	
+	for(i = 0; i <= top; i++)
+	{	
+		printf("Information of contact %d: \n", i+1);
+		display_information(list[i]);
+		
+	}
 }
 
 
 void add_contact_information(CT *sample)
 {
 	printf("Enter first name: "); fgets(sample->first_name, sizeof(sample->first_name), stdin);
+	if(sample->first_name[0] >= 97 && sample->first_name[0] <= 122)
+		sample->first_name[0] = sample->first_name[0] - 32;
+	
 	printf("Enter last name: "); fgets(sample->last_name, sizeof(sample->last_name), stdin);
+	if(sample->last_name[0] >= 97 && sample->last_name[0] <= 122)
+		sample->last_name[0] = sample->last_name[0] - 32;
+	
 	printf("Enter company: "); fgets(sample->company, sizeof(sample->company), stdin);
 	add_phone_number(sample);
 	printf("Enter email: "); fgets(sample->email, sizeof(sample->email), stdin);
@@ -248,7 +277,7 @@ void add_contact_information(CT *sample)
 void add_birthday(CT *sample)
 {
 	BIRTHDAY B;  
-	int len1, len2, len3, check, i;
+	int check;
 	
 	printf("Birthday(DD/MM/YYYY):\n");
 	
@@ -256,9 +285,9 @@ void add_birthday(CT *sample)
 	{	
 		check = 0;
 		
-		printf("Enter day: "); scanf("%d", &B.day); clear();
-		printf("Enter month: "); scanf("%d", &B.month); clear();
-		printf("Enter year: "); scanf("%d", &B.year); clear();
+		printf("Enter day: "); scanf("%f", &B.day); clear();
+		printf("Enter month: "); scanf("%f", &B.month); clear();
+		printf("Enter year: "); scanf("%f", &B.year); clear();
 		 
 		if(B.month == 1 || B.month == 3 || B.month == 5 || B.month == 7 || B.month == 8 || B.month == 10 || B.month == 12)
 		{
@@ -274,8 +303,15 @@ void add_birthday(CT *sample)
 		
 		else if(B.month == 2)
 		{
-			if(B.day > 29 || B.day < 1)
-				check = 1;
+			if((int)B.year % 400 == 0 || ((int)B.year % 4 == 0 && (int)B.year % 100 != 0))
+			{
+				if(B.day > 29 || B.day < 1)
+					check = 1;
+			}
+			else
+				if(B.day > 28 || B.day < 1)
+					check = 1;
+				
 		}
 		
 		else
@@ -392,7 +428,7 @@ void display_information(CT sample)
 	printf("Email: %s", sample.email);
 	printf("Working address: %s", sample.working_address); 
 	printf("Home address: %s", sample.home_address);
-	printf("Birthday: %02d/%02d/%04d\n\n\n", sample.birthday.day, sample.birthday.month, sample.birthday.year);
+	printf("Birthday: %02.0f/%02.0f/%04.0f\n\n\n", sample.birthday.day, sample.birthday.month, sample.birthday.year);
 }
 
 
