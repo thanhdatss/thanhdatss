@@ -31,26 +31,35 @@ typedef struct contact CT;
 void print_menu();
 void add_contact(CT *list, int *top);
 void edit_contact(CT *list, int top);
-void delete_contact(CT *list, int *top);  // (by name or phone number)
-void search_contact(CT *list, int n);  // (by name or phone number)
-void list_all_contacts_with_birthdays_in_a_given_month(CT *list, int top); //(sort by date)
-void list_all_contacts_in_the_table_format(CT *list, int top); // (sort by name)
+void delete_contact(CT *list, int *top);  
+void search_contact(CT *list, int n);  
+void list_all_contacts_with_birthdays_in_a_given_month(CT *list, int top); 
+void list_all_contacts_in_the_table_format(CT *list, int top); 
+void export_to_file(CT *list, int n);
+void update_from_file(CT *list, int *n);
 void add_contact_information(CT *sample);
 void add_phone_number(CT *sample);
 void add_birthday(CT *sample);
-int location(CT *list, int top);
 void display_information(CT sample);
+int location(CT *list, int top);
+
 void clear();
-void show(CT *list, int n);
 
 
 int main()
 {	
-	int top = -1;     //top la index cua phan tu tren cung, top + 1 se la size   
+	int top = -1;   
+	char choice;
+	 
 	CT *list;
 	list = (CT *)malloc( sizeof(CT));
-	char choice;
-
+	
+	if(list == NULL)
+	{
+		printf("Cannot be allocated");
+		exit(0);
+	}
+	
 	do
 	{
 		system("cls"); 
@@ -85,9 +94,13 @@ int main()
 				list_all_contacts_in_the_table_format(list, top);
 				break;
 			case '7' :
-				show(list, top);
+				export_to_file(list, top);
 				break;
-		}
+			case '8' :
+				update_from_file(list, &top);
+				break;
+		}		
+		
 		
 		if (choice != 'q')
 		{	
@@ -113,9 +126,10 @@ void print_menu()
 	printf("4. Search_contact\n");
 	printf("5. List all contacts with birthdays in a given month\n");
 	printf("6. List all contacts in the table format\n");
-	printf("7. display list\n");
+	printf("7. export to file\n");
+	printf("8. update from file");
 	printf("q. Quit\n\n");
-	printf("Enter your choice (1/2/3/4/5/6/7/q): ");
+	printf("Enter your choice (1/2/3/4/5/6/7/8/q): ");
 }
 
 
@@ -126,6 +140,11 @@ void add_contact(CT *list, int *top)
 	*top = *top + 1;
 	
 	list = (CT *)realloc(list, (*top+1)*sizeof(CT));
+	if((list+ *top)==NULL)
+	{
+		printf("Cannot be allocated");
+		return;
+	}
 	
 	add_contact_information(&sample);	
 	list[*top] = sample;
@@ -197,7 +216,7 @@ void list_all_contacts_with_birthdays_in_a_given_month(CT *list, int top)
 	int i, j, x = 1;
 	float month;
 	
-	printf("Enter the birth month of the contacts you want to show(format: MM): "); scanf("%f", &month); clear();
+	printf("Enter the birth month of the contacts you want to show: "); scanf("%f", &month); clear();
 	
 	for(i = 0; i <= top; i++)
 	{
@@ -250,8 +269,66 @@ void list_all_contacts_in_the_table_format(CT *list, int top)
 	{	
 		printf("Information of contact %d: \n", i+1);
 		display_information(list[i]);
-		
 	}
+}
+
+
+void export_to_file(CT *list, int top)
+{
+	char name_file[100];
+	printf("\nEnter name file: ");
+	scanf("%s", name_file); clear();
+	
+	FILE *f;
+	f = fopen(name_file, "wb");
+	
+	if(f==NULL){
+		printf("\nError");
+		return;
+	}
+	
+	int capacity;
+	capacity = top + 1;
+	fwrite(&capacity, sizeof(capacity), 1, f);
+	for(int i = 0; i <= top; i++)
+	{
+		fwrite(&list[i], sizeof(CT), 1, f);
+	}
+	
+	printf("successfully");
+	
+	fclose(f);	
+}
+
+
+void update_from_file(CT *list, int *top)
+{
+	char name_file[100];
+	printf("\nEnter name file: ");
+	scanf("%s", name_file); clear();
+	
+	FILE *f;
+	f = fopen(name_file, "rb");
+	
+	if(f==NULL){
+		printf("\nLoi moi file de ghi!");
+		return;
+	}
+	
+	int capacity;
+	fread(&capacity, sizeof(capacity), 1, f);
+	*top = capacity - 1;
+	
+	list = (CT *)realloc(list, (capacity)*sizeof(CT));
+	
+	for(int i = 0; i <= *top; i++)
+	{
+		fread(&list[i], sizeof(CT), 1, f);
+	}
+	
+	printf("successfully");
+	
+	fclose(f);	
 }
 
 
@@ -365,6 +442,19 @@ void add_phone_number(CT *sample)
 }
 
 
+void display_information(CT sample)
+{
+	printf("First name: %s", sample.first_name); 
+	printf("Last name: %s", sample.last_name); 
+	printf("Company: %s", sample.company);
+	printf("Phone number: %s", sample.phone_number);
+	printf("Email: %s", sample.email);
+	printf("Working address: %s", sample.working_address); 
+	printf("Home address: %s", sample.home_address);
+	printf("Birthday: %02.0f/%02.0f/%04.0f\n\n\n", sample.birthday.day, sample.birthday.month, sample.birthday.year);
+}
+
+
 int location(CT *list, int top)
 {	
 	char choice;
@@ -380,7 +470,14 @@ int location(CT *list, int top)
 	if(choice == '1')
 	{
 		printf("Enter first name: "); fgets(sample.first_name, sizeof(sample.first_name), stdin);
+		if(sample.first_name[0] >= 97 && sample.first_name[0] <= 122)
+			sample.first_name[0] = sample.first_name[0] - 32;
+		
 		printf("Enter last name: "); fgets(sample.last_name, sizeof(sample.last_name), stdin);
+		if(sample.last_name[0] >= 97 && sample.last_name[0] <= 122)
+			sample.last_name[0] = sample.last_name[0] - 32;
+		
+		
 		for(i = 0; i <= top; i++)
 		{		
 			if(strcmp(sample.first_name, list[i].first_name) == 0 && strcmp(sample.last_name, list[i].last_name) == 0)
@@ -403,32 +500,6 @@ int location(CT *list, int top)
 	}
 	else
 		return -1;      
-}
-
-
-void show(CT *list, int n)
-{	
-	CT x;
-	int i;
-	
-	for(i = 0; i <= n; i++)
-	{	
-		
-		printf("       Information of contact %d\n\n", i);
-		display_information(list[i]);
-	}
-}
-
-void display_information(CT sample)
-{
-	printf("First name: %s", sample.first_name); 
-	printf("Last name: %s", sample.last_name); 
-	printf("Company: %s", sample.company);
-	printf("Phone number: %s", sample.phone_number);
-	printf("Email: %s", sample.email);
-	printf("Working address: %s", sample.working_address); 
-	printf("Home address: %s", sample.home_address);
-	printf("Birthday: %02.0f/%02.0f/%04.0f\n\n\n", sample.birthday.day, sample.birthday.month, sample.birthday.year);
 }
 
 
