@@ -127,7 +127,7 @@ void print_menu()
 	printf("5. List all contacts with birthdays in a given month\n");
 	printf("6. List all contacts in the table format\n");
 	printf("7. export to file\n");
-	printf("8. update from file");
+	printf("8. update from file\n");
 	printf("q. Quit\n\n");
 	printf("Enter your choice (1/2/3/4/5/6/7/8/q): ");
 }
