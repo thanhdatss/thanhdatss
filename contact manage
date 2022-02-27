@@ -287,9 +287,7 @@ void export_to_file(CT *list, int top)
 		return;
 	}
 	
-	int capacity;
-	capacity = top + 1;
-	fwrite(&capacity, sizeof(capacity), 1, f);
+	fwrite(&top, sizeof(top), 1, f);
 	for(int i = 0; i <= top; i++)
 	{
 		fwrite(&list[i], sizeof(CT), 1, f);
@@ -311,15 +309,12 @@ void update_from_file(CT *list, int *top)
 	f = fopen(name_file, "rb");
 	
 	if(f==NULL){
-		printf("\nLoi moi file de ghi!");
+		printf("\nERROR");
 		return;
 	}
 	
-	int capacity;
-	fread(&capacity, sizeof(capacity), 1, f);
-	*top = capacity - 1;
-	
-	list = (CT *)realloc(list, (capacity)*sizeof(CT));
+	fread(top, sizeof(int), 1, f);
+	list = (CT *)realloc(list, (*top + 1)*sizeof(CT));
 	
 	for(int i = 0; i <= *top; i++)
 	{
