@@ -36,7 +36,7 @@ void search_contact(CT *list, int top);
 void list_all_contacts_with_birthdays_in_a_given_month(CT *list, int top); 
 void list_all_contacts_in_the_table_format(CT *list, int top); 
 void export_to_file(CT *list, int top);
-void update_from_file1(CT *list, int *top, FILE *f);
+void update_from_file1( int *top, FILE *f);
 void update_from_file2(CT *list, int *top, FILE *f);
 void add_contact_information(CT *sample);
 void add_phone_number(CT *sample);
@@ -100,13 +100,15 @@ int main()
 				export_to_file(list, top);
 				break;
 			case '8' :
+				update_from_file1(&top, f);
+				
 				char name_file[100];
 				printf("\nEnter name file: ");
 				scanf("%s", name_file); clear();
-	
+				
 				f = fopen(name_file, "rb");
 				fread(&top, sizeof(int), 1, f);
-			
+				
 				list = (CT *)realloc(list, (top + 1)*sizeof(CT));
 				update_from_file2(list, &top, f);
 				break;
@@ -309,7 +311,7 @@ void export_to_file(CT *list, int top)
 }
 
 
-void update_from_file1(CT *list, int *top, FILE *f)
+void update_from_file1( int *top, FILE *f)
 {
 
 }
