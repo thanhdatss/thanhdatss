@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -33,11 +32,12 @@ void print_menu();
 void add_contact(CT *list, int *top);
 void edit_contact(CT *list, int top);
 void delete_contact(CT *list, int *top);  
-void search_contact(CT *list, int n);  
+void search_contact(CT *list, int top);  
 void list_all_contacts_with_birthdays_in_a_given_month(CT *list, int top); 
 void list_all_contacts_in_the_table_format(CT *list, int top); 
-void export_to_file(CT *list, int n);
-void update_from_file(CT *list, int *n);
+void export_to_file(CT *list, int top);
+void update_from_file1(CT *list, int *top, FILE *f);
+void update_from_file2(CT *list, int *top, FILE *f);
 void add_contact_information(CT *sample);
 void add_phone_number(CT *sample);
 void add_birthday(CT *sample);
@@ -49,6 +49,7 @@ void clear();
 int main()
 {	
 	int top = -1;   
+	FILE *f;
 	char choice;
 	 
 	CT *list;
@@ -75,7 +76,8 @@ int main()
 
 		switch(choice)
 		{
-			case '1':	
+			case '1':
+				list = (CT *)realloc(list, (top+2)*sizeof(CT));	
 				add_contact(list, &top);
 				break;
 			case '2':
@@ -83,6 +85,7 @@ int main()
 				break;
 			case '3':
 				delete_contact(list, &top);
+				list = (CT *)realloc(list, (top + 1)*sizeof(CT));
 				break;
 			case '4':
 				search_contact(list, top);
@@ -97,7 +100,15 @@ int main()
 				export_to_file(list, top);
 				break;
 			case '8' :
-				update_from_file(list, &top);
+				char name_file[100];
+				printf("\nEnter name file: ");
+				scanf("%s", name_file); clear();
+	
+				f = fopen(name_file, "rb");
+				fread(&top, sizeof(int), 1, f);
+			
+				list = (CT *)realloc(list, (top + 1)*sizeof(CT));
+				update_from_file2(list, &top, f);
 				break;
 		}		
 		
@@ -140,7 +151,6 @@ void add_contact(CT *list, int *top)
 	
 	*top = *top + 1;
 	
-	list = (CT *)realloc(list, (*top+1)*sizeof(CT));
 	if((list+ *top)==NULL)
 	{
 		printf("Cannot be allocated");
@@ -187,20 +197,19 @@ void delete_contact(CT *list, int *top)
 			}
 			
 		*top = *top - 1;
-		list = (CT *)realloc(list, (*top + 1)*sizeof(CT));
 		
 		printf("You deleted successfully");		
 	}	
 }
 
 
-void search_contact(CT *list, int n)
+void search_contact(CT *list, int top)
 {
 	int loc;  // loc = location
 	
 	printf("Choose 1/2 to search\n");
 	
-	loc = location(list, n);
+	loc = location(list, top);
 	
 	if(loc == -1 )
 		printf("Not contact found");
@@ -280,43 +289,32 @@ void export_to_file(CT *list, int top)
 	printf("\nEnter name file: ");
 	scanf("%s", name_file); clear();
 	
-	FILE *f;
-	f = fopen(name_file, "wb");
+	FILE *f2;
+	f2 = fopen(name_file, "wb");
 	
-	if(f==NULL){
+	if(f2==NULL){
 		printf("\nError");
 		return;
 	}
 	
-	fwrite(&top, sizeof(top), 1, f);
+	fwrite(&top, sizeof(top), 1, f2);
 	for(int i = 0; i <= top; i++)
 	{
-		fwrite(&list[i], sizeof(CT), 1, f);
+		fwrite(&list[i], sizeof(CT), 1, f2);
 	}
 	
 	printf("successfully");
 	
-	fclose(f);	
+	fclose(f2);	
 }
 
 
-void update_from_file(CT *list, int *top)
+void update_from_file1(CT *list, int *top, FILE *f)
 {
-	char name_file[100];
-	printf("\nEnter name file: ");
-	scanf("%s", name_file); clear();
-	
-	FILE *f;
-	f = fopen(name_file, "rb");
-	
-	if(f==NULL){
-		printf("\nERROR");
-		return;
-	}
-	
-	fread(top, sizeof(int), 1, f);
-	list = (CT *)realloc(list, (*top + 1)*sizeof(CT));
-	
+
+}
+void update_from_file2(CT *list, int *top, FILE *f)
+{	
 	for(int i = 0; i <= *top; i++)
 	{
 		fread(&list[i], sizeof(CT), 1, f);
