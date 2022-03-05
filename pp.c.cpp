@@ -1,7 +1,7 @@
+// contact manager system
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 
 struct struct_birthday
 {
@@ -24,9 +24,7 @@ struct contact
 	BIRTHDAY birthday;
 };
 
-
 typedef struct contact CT;
-
 
 void print_menu();
 void add_contact(CT *list, int *top);
@@ -36,8 +34,7 @@ void search_contact(CT *list, int top);
 void list_all_contacts_with_birthdays_in_a_given_month(CT *list, int top); 
 void list_all_contacts_in_the_table_format(CT *list, int top); 
 void export_to_file(CT *list, int top);
-void update_from_file1( int *top, FILE *f);
-void update_from_file2(CT *list, int *top, FILE *f);
+void update_from_file(CT **list, int *top);
 void add_contact_information(CT *sample);
 void add_phone_number(CT *sample);
 void add_birthday(CT *sample);
@@ -48,18 +45,9 @@ void clear();
 
 int main()
 {	
+	CT *list = NULL;
 	int top = -1;   
-	FILE *f;
 	char choice;
-	 
-	CT *list;
-	list = (CT *)malloc( sizeof(CT));
-	
-	if(list == NULL)
-	{
-		printf("Cannot be allocated");
-		exit(0);
-	}
 	
 	do
 	{
@@ -78,7 +66,10 @@ int main()
 		{
 			case '1':
 				list = (CT *)realloc(list, (top+2)*sizeof(CT));	
-				add_contact(list, &top);
+				if(list == NULL)
+					printf("Cannot be allocated");
+				else			
+					add_contact(list, &top);
 				break;
 			case '2':
 				edit_contact(list, top);
@@ -99,18 +90,8 @@ int main()
 			case '7' :
 				export_to_file(list, top);
 				break;
-			case '8' :
-				update_from_file1(&top, f);
-				
-				char name_file[100];
-				printf("\nEnter name file: ");
-				scanf("%s", name_file); clear();
-				
-				f = fopen(name_file, "rb");
-				fread(&top, sizeof(int), 1, f);
-				
-				list = (CT *)realloc(list, (top + 1)*sizeof(CT));
-				update_from_file2(list, &top, f);
+			case '8' :		
+				update_from_file(&list, &top);
 				break;
 		}		
 		
@@ -169,6 +150,8 @@ void add_contact(CT *list, int *top)
 void edit_contact(CT *list, int top)
 {
 	int loc = location(list, top);
+	
+	printf("Choose 1/2 to edit\n");
 	
 	if(loc == -1)
 		printf("Not contact found");
@@ -291,35 +274,52 @@ void export_to_file(CT *list, int top)
 	printf("\nEnter name file: ");
 	scanf("%s", name_file); clear();
 	
-	FILE *f2;
-	f2 = fopen(name_file, "wb");
+	FILE *f;
+	f = fopen(name_file, "wb");
 	
-	if(f2==NULL){
+	if(f == NULL){
 		printf("\nError");
 		return;
 	}
 	
-	fwrite(&top, sizeof(top), 1, f2);
+	fwrite(&top, sizeof(top), 1, f);
 	for(int i = 0; i <= top; i++)
 	{
-		fwrite(&list[i], sizeof(CT), 1, f2);
+		fwrite(&list[i], sizeof(CT), 1, f);
 	}
 	
 	printf("successfully");
 	
-	fclose(f2);	
+	fclose(f);	
 }
 
 
-void update_from_file1( int *top, FILE *f)
-{
-
-}
-void update_from_file2(CT *list, int *top, FILE *f)
+void update_from_file(CT **list, int *top)
 {	
+	FILE *f;
+	char name_file[100];
+	printf("\nEnter name file: ");
+	scanf("%s", name_file); clear();
+				
+	f = fopen(name_file, "rb");
+	fread(top, sizeof(int), 1, f);
+	
+	if(f == NULL)
+	{
+		printf("ERROR");
+		return;
+	}
+				
+	*list = (CT *)malloc((*top + 1)*sizeof(CT));
+	
+	if(*list == NULL){
+		printf("Cannot be allocated");
+		return;
+	}
+	
 	for(int i = 0; i <= *top; i++)
 	{
-		fread(&list[i], sizeof(CT), 1, f);
+		fread(*(list)+i, sizeof(CT), 1, f);
 	}
 	
 	printf("successfully");
