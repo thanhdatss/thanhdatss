@@ -1,4 +1,4 @@
-// contact manager system
+// contact keeper
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -32,7 +32,7 @@ void edit_contact(CT *list, int top);
 void delete_contact(CT *list, int *top);  
 void search_contact(CT *list, int top);  
 void list_all_contacts_with_birthdays_in_a_given_month(CT *list, int top); 
-void list_all_contacts_in_the_table_format(CT *list, int top); 
+void list_all_contacts_in_the_table_format(CT *list, int top);        // sort by name
 void export_to_file(CT *list, int top);
 void update_from_file(CT **list, int *top);
 void add_contact_information(CT *sample);
@@ -55,7 +55,7 @@ int main()
 		print_menu();
 		scanf("%c%*c", &choice);
 
-	
+
 		system("cls"); 
 
 		printf("CONTACT KEEPER\n");
@@ -134,12 +134,6 @@ void add_contact(CT *list, int *top)
 	
 	*top = *top + 1;
 	
-	if((list+ *top)==NULL)
-	{
-		printf("Cannot be allocated");
-		return;
-	}
-	
 	add_contact_information(&sample);	
 	list[*top] = sample;
 	
@@ -149,9 +143,9 @@ void add_contact(CT *list, int *top)
 
 void edit_contact(CT *list, int top)
 {
-	int loc = location(list, top);
+	int loc;
 	
-	printf("Choose 1/2 to edit\n");
+	loc = location(list, top);
 	
 	if(loc == -1)
 		printf("Not contact found");
@@ -160,15 +154,12 @@ void edit_contact(CT *list, int top)
 			printf("\nStart editing:\n\n");
 			add_contact_information(&list[loc]);
 		}
-	
 }
 
 
 void delete_contact(CT *list, int *top)
 {	
-	int i, loc;   // loc = location
-	
-	printf("Choose 1/2 to delete\n");
+	int i, loc;   
 	
 	loc = location(list, *top);
 
@@ -176,10 +167,8 @@ void delete_contact(CT *list, int *top)
 		printf("Not contact found");
 	else
 	{	
-		for(i = loc; i <= *top; i++)
-			{	
-				list[i] = list[i+1];
-			}
+		for(i = loc; i <= *top; i++)	
+			list[i] = list[i+1];
 			
 		*top = *top - 1;
 		
@@ -190,9 +179,7 @@ void delete_contact(CT *list, int *top)
 
 void search_contact(CT *list, int top)
 {
-	int loc;  // loc = location
-	
-	printf("Choose 1/2 to search\n");
+	int loc; 
 	
 	loc = location(list, top);
 	
@@ -200,7 +187,8 @@ void search_contact(CT *list, int top)
 		printf("Not contact found");
 	else
 	{
-	printf("\n\nInformation: \n\n");
+	printf("\n\nInformation: \n");
+	printf("-----------\n");
 	display_information(list[loc]);
 	}
 }
@@ -211,7 +199,8 @@ void list_all_contacts_with_birthdays_in_a_given_month(CT *list, int top)
 	int i, j, x = 1;
 	float month;
 	
-	printf("Enter the birth month of the contacts you want to show: "); scanf("%f", &month); clear();
+	printf("Enter the birth month of the contacts you want to show: "); 
+	scanf("%f", &month); clear();
 	
 	for(i = 0; i <= top; i++)
 	{
@@ -226,13 +215,14 @@ void list_all_contacts_with_birthdays_in_a_given_month(CT *list, int top)
 			}
 	}
 	
-	printf("\nList of all contact that same a month(%.0f) of birth: \n\n", month);
+	printf("\nList of all contact that same a month( %.0f ) of birth: \n\n", month);
 	
 	for(i = 0; i <= top; i++)
 	{	
 		if(list[i].birthday.month == month )	
 		{
-		printf("Information of contact %d: \n", i+1); 
+		printf("Information of contact: \n"); 
+		printf("----------------------\n");
 		display_information(list[i]);
 		}
 	}
@@ -240,20 +230,17 @@ void list_all_contacts_with_birthdays_in_a_given_month(CT *list, int top)
 }
 
 
-void list_all_contacts_in_the_table_format(CT *list, int top)
+void list_all_contacts_in_the_table_format(CT *list, int top)      //sort by name
 {
-	int i, j, x;
-	
-	
+	int i, j;
+		
 	for(i = 0; i < top; i++)
 	{
 		for(j = 0; j < top - i; j++)
 		{	
-		
-		
 			if(strcmp(list[j].first_name, list[j+1].first_name) > 0)
 			{
-				CT temp = list[j];
+					CT temp = list[j];
 					list[j] = list[j+1];
 					list[j+1] = temp;
 			}
@@ -263,6 +250,7 @@ void list_all_contacts_in_the_table_format(CT *list, int top)
 	for(i = 0; i <= top; i++)
 	{	
 		printf("Information of contact %d: \n", i+1);
+		printf("----------------------\n");
 		display_information(list[i]);
 	}
 }
@@ -271,6 +259,7 @@ void list_all_contacts_in_the_table_format(CT *list, int top)
 void export_to_file(CT *list, int top)
 {
 	char name_file[100];
+	
 	printf("\nEnter name file: ");
 	scanf("%s", name_file); clear();
 	
@@ -296,20 +285,22 @@ void export_to_file(CT *list, int top)
 
 void update_from_file(CT **list, int *top)
 {	
-	FILE *f;
 	char name_file[100];
+	
 	printf("\nEnter name file: ");
 	scanf("%s", name_file); clear();
-				
+	
+	FILE *f = NULL;			
 	f = fopen(name_file, "rb");
-	fread(top, sizeof(int), 1, f);
 	
 	if(f == NULL)
 	{
 		printf("ERROR");
 		return;
 	}
-				
+	
+	fread(top, sizeof(int), 1, f);
+					
 	*list = (CT *)malloc((*top + 1)*sizeof(CT));
 	
 	if(*list == NULL){
@@ -457,6 +448,7 @@ int location(CT *list, int top)
 	int i;
 	CT sample;
 	
+	printf("Choose 1/2 to perform operation\n");
 	printf("1. Perform operation with name\n");
 	printf("2. Perform operation with phone number\n\n");
 	printf("Enter your choice (1/2): ");
